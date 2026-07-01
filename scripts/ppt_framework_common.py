@@ -49,6 +49,54 @@ ACCENT_BAR = (
 )
 MID_BLUE = RGBColor(0x2F, 0x64, 0xA7)
 
+# ---------------------------------------------------------------------------
+# Typography (matches original Research Framework.pptx)
+# ---------------------------------------------------------------------------
+FONT = "Arial"
+FONT_SLIDE2 = "Times New Roman"
+
+
+class FS:
+    """Font sizes in points — aligned with the original deck."""
+
+    # Slide 1 — Evaluation / chapter flows (Arial)
+    PANEL_TITLE = 12.0
+    GROUP_HEADER = 9.0
+    CARD_TITLE = 8.0
+    CARD_TITLE_SM = 7.3
+    BODY = 6.8
+    BODY_SM = 6.4
+    FOOTNOTE = 6.3
+    FOOTER = 8.2
+    CHAPTER_TAG = 8.5
+    CHAPTER_NAME = 11.0
+    OUTPUT = 7.6
+
+    # Slide 2 — Data organization (Times New Roman)
+    S2_PANEL = 12.0
+    S2_SECTION = 10.5
+    S2_TAG = 12.5
+    S2_ROLE = 8.4
+    S2_BODY = 7.6
+    S2_BODY_SM = 7.0
+    S2_LABEL = 8.6
+    S2_CHAPTER = 10.0
+    S2_CHAPTER_NAME = 11.0
+    S2_TASK_HDR = 8.6
+    S2_TASK = 7.6
+    S2_OUTPUT_HDR = 10.5
+    S2_OUTPUT = 8.0
+
+    # Slides 3–4 — Future plan (Arial)
+    S34_TITLE_L = 14.0
+    S34_TITLE_R = 11.0
+    S34_GOAL = 10.0
+    S34_SECTION = 10.0
+    S34_PLUS = 14.0
+    S34_NUM = 8.0
+    S34_TIME = 6.0
+    S34_FOOTER = 10.0
+
 
 def new_presentation() -> Presentation:
     prs = Presentation()
@@ -84,8 +132,8 @@ def rect(slide, x, y, w, h, fill, line=None, line_w=1.0, shape=MSO_SHAPE.RECTANG
     return sp
 
 
-def label(slide, x, y, w, h, text, *, size=9, bold=False, color=DARK,
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, font="Arial"):
+def label(slide, x, y, w, h, text, *, size=9, bold=False, italic=False, color=DARK,
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, font=FONT):
     if not text:
         return None
     box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
@@ -102,15 +150,16 @@ def label(slide, x, y, w, h, text, *, size=9, bold=False, color=DARK,
     f.name = font
     f.size = Pt(size)
     f.bold = bold
+    f.italic = italic
     f.color.rgb = color
     return box
 
 
 def header_bar(slide, x, y, w, h, text="", *, fill=LIGHT, color=NAVY, size=10,
-               border=NAVY, line_w=1.0):
+               border=NAVY, line_w=1.0, font=FONT):
     rect(slide, x, y, w, h, fill, line=border, line_w=line_w)
     if text:
-        label(slide, x, y, w, h, text, size=size, bold=True, color=color)
+        label(slide, x, y, w, h, text, size=size, bold=True, color=color, font=font)
 
 
 def panel_outline(slide, x, y, w, h, *, border=PANEL_BORDER):
@@ -131,10 +180,12 @@ def arrow(slide, x, y, w, h, *, shape=MSO_SHAPE.RIGHT_ARROW, color=BLUE):
 
 
 def stacked_group(slide, x, y, w, h, header, n_sub, *, header_h=0.26, pad=0.07,
-                  sub_gap=0.08, footer_h=0.0, header_fill=LIGHT, border=NAVY):
+                  sub_gap=0.08, footer_h=0.0, header_fill=LIGHT, border=NAVY,
+                  header_size=FS.GROUP_HEADER, font=FONT):
     """Outer box + header strip + N equal sub-cards (+ optional footer band)."""
     rect(slide, x, y, w, h, WHITE, line=border, line_w=1.25)
-    header_bar(slide, x, y, w, header_h, header, fill=header_fill, border=border)
+    header_bar(slide, x, y, w, header_h, header, fill=header_fill, border=border,
+               size=header_size, font=font)
     body_top = y + header_h + pad
     body_h = h - header_h - 2 * pad - footer_h
     if n_sub <= 0:
@@ -165,26 +216,29 @@ def flow_row(slide, x, y, w, h, n_steps, *, gap=0.33, arrow_w=0.29, arrow_h=0.18
             cx += gap
 
 
-def chapter_strip(slide, x, y, w, h, chapter_tag="", name="", *, tag_w=1.0):
+def chapter_strip(slide, x, y, w, h, chapter_tag="", name="", *, tag_w=1.0,
+                  tag_size=FS.CHAPTER_TAG, name_size=FS.CHAPTER_NAME, font=FONT):
     """Rounded container with tag + name row (structure only)."""
     card(slide, x, y, w, h, rounded=True, border=BORDER)
     if chapter_tag:
         rect(slide, x + 0.17, y + 0.10, tag_w, 0.26, NAVY)
         label(slide, x + 0.17, y + 0.10, tag_w, 0.26, chapter_tag,
-              size=8.5, bold=True, color=WHITE)
+              size=tag_size, bold=True, color=WHITE, font=font)
     if name:
         label(slide, x + 0.17 + tag_w + 0.12, y + 0.10, 3.0, 0.26, name,
-              size=11, bold=True, color=NAVY, align=PP_ALIGN.LEFT)
+              size=name_size, bold=True, color=NAVY, align=PP_ALIGN.LEFT, font=font)
 
 
-def numbered_steps(slide, x_items, y, w_item, h_item, n, *, start=1):
+def numbered_steps(slide, x_items, y, w_item, h_item, n, *, start=1,
+                   num_size=FS.S34_NUM, font=FONT):
     """Vertical numbered circles with empty text bands."""
     for i in range(n):
         oy = y + i * (h_item + 0.08)
         cx, cy = x_items, oy + 0.06
         rect(slide, cx, cy, 0.27, 0.27, WHITE, line=BLUE, line_w=1.2,
              shape=MSO_SHAPE.OVAL)
-        label(slide, cx, cy, 0.27, 0.27, str(start + i), size=8, bold=True, color=BLUE)
+        label(slide, cx, cy, 0.27, 0.27, str(start + i), size=num_size,
+              bold=True, color=BLUE, font=font)
         card(slide, cx + 0.38, oy, w_item - 0.38, h_item, border=BORDER2)
 
 

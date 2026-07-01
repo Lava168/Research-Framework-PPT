@@ -18,6 +18,17 @@ python scripts/build_research_framework_ppt.py
 
 Output: `Research Framework.pptx` in the project root (4 slides, 13.333 × 7.5 in).
 
+## Typography
+
+Matches the original `Research Framework.pptx`:
+
+| Slides | Font | Notes |
+|--------|------|-------|
+| 1, 3, 4 | **Arial** | Panel titles 12 pt; group headers 9 pt; chapter tags 8.5 pt / names 11 pt |
+| 2 | **Times New Roman** | Panel/section headers 12 / 10.5 pt; chapter tags 11 pt |
+
+Font sizes are centralized in `FS` inside `scripts/ppt_framework_common.py`.
+
 ## Slides
 
 | Slide | Layout |
